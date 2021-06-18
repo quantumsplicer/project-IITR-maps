@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>IIT Roorkee Maps</title>
+
+    <meta charset="utf-8" />
+    <link rel="shortcut icon"
+        href="https://img-premium.flaticon.com/png/512/235/235861.png?token=exp=1623156550~hmac=a6e3af4f1ad412614e86cbd159230ee6" />
+    <link rel="stylesheet" href="main.css">
+    <link href='https://fonts.googleapis.com/css?family=Noto+Sans' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+    <meta http-equiv="x-ua-compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description"
+        content="This sample shows how to use the Services module for Azure Maps to perform a fuzzy search for points of interests, address, and places. Providing user location information allows the search service choose results that are more local to the user." />
+    <meta name="keywords"
+        content="Microsoft maps, map, gis, API, SDK, services, module, geolocation, search, fuzzy, geocode, geocoding, points of interest, POI, address, addresses, places" />
+    <meta name="author" content="Microsoft Azure Maps" />
+
+    <!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css"
+        type="text/css" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+
+    <!-- Add a reference to the Azure Maps Services Module JavaScript file. -->
+    <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js"></script>
+
+    <script type='text/javascript'>
+        var map, searchURL, datasource, popup;
+
+        // //Seattle
+        // var start = [77.895098, 29.865354];
+
+        // //Redmond
+        // var end = [77.897490, 29.862376];
+
+        //Colors for the different routes.
+        var routeColors = ['#2272B9', '#ff7b25', '#6b5b95', '#d64161', '#00cc66', '#000000'];
+
+        var restRoutingRequestUrl = 'https://{azMapsDomain}/route/directions/json?api-version=1&query={query}&routeRepresentation=polyline&travelMode=car&view=Auto';
+
+        function GetMap() {
+            //Initialize a map instance.
+            map = new atlas.Map('myMap', {
+                center: [77.8955, 29.8665],
+                zoom: 15.5,
+                view: 'Auto',
+                // style: 'satellite',
+                showLogo: 'True',
+                authOptions: {
+                    authType: 'subscriptionKey',
+                    subscriptionKey: 'Tww5Kx5V3WJdsmIuN0NtGN0BLKdw6Q84w44LwhCLFq0'
+                }
+                //Add authentication details for connecting to Azure Maps.
+
+            });
+            map.setStyle({
+                // renderWorldCopies: true,
+                // showBuildingModels: true,
+                showLogo: false,
+                showFeedbackLink: false
+            });
+
+
+            // //Use MapControlCredential to share authentication between a map control and the service module.
+            // var pipeline = atlas.service.MapsURL.newPipeline(new atlas.service.MapControlCredential(map));
+
+            // //Construct the RouteURL object
+            // routeURL = new atlas.service.RouteURL(pipeline);
+
+
+        }
+
+        function direction(str) {
+
+            // console.log(datasource);
+            //Wait until the map resources are ready.
+            datasource.clear();
+
+            var form = document.querySelector("form");
+            var place = [];
+            var start = [];
+            var end = [];
+            var name_of_start = '';
+            var name_of_end = '';
+
+
+            form.addEventListener("submit", function (event) {
+                console.log(str)
+                var data = new FormData(form);
+                var output = "";
+                for (const entry of data) {
+                    output = output + entry[0] + "=" + entry[1] + "\r";
+                };
+                place[0] = output.substring(6, 15);
+                place[1] = output.substring(22, 31);
+
+                switch (place[0]) {
+                    case 'location1':
+                        start[0] = 77.889735;
+                        start[1] = 29.865712;
+                        name_of_start = "Main Gate";
+                        break;
+                    case 'location2':
+                        start[0] = 77.896543;
+                        start[1] = 29.864679;
+                        name_of_start = "Main Building";
+                        break;
+                    case 'location3':
+                        start[0] = 77.895098;
+                        start[1] = 29.865354;
+                        name_of_start = "Library";
+                        break;
+                    case 'location4':
+                        start[0] = 77.896182;
+                        start[1] = 29.863628;
+                        name_of_start = "ECE Dept.";
+                        break;
+                    case 'location5':
+                        start[0] = 77.897490;
+                        start[1] = 29.862376;
+                        name_of_start = "MIED";
+                        break;
+                    case 'location6':
+                        start[0] = 77.896122;
+                        start[1] = 29.862195;
+                        name_of_start = "Physics Dept.";
+                        break;
+                    case 'location7':
+                        start[0] = 77.894588;
+                        start[1] = 29.862265;
+                        name_of_start = "Govind Bhawan";
+                        break;
+                    case 'location8':
+                        start[0] = 77.895925;
+                        start[1] = 29.864544;
+                        name_of_start = "SBI";
+                        break;
+                    case 'location9':
+                        start[0] = 77.894138;
+                        start[1] = 29.864903;
+                        name_of_start = "LHC";
+                        break;
+                }
+
+                switch (place[1]) {
+                    case 'location1':
+                        end[0] = 77.889735;
+                        end[1] = 29.865712;
+                        name_of_end = "Main Gate";
+                        break;
+                    case 'location2':
+                        end[0] = 77.896543;
+                        end[1] = 29.864679;
+                        name_of_end = "Main Building";
+                        break;
+                    case 'location3':
+                        end[0] = 77.895098;
+                        end[1] = 29.865354;
+                        name_of_end = "Library";
+                        break;
+                    case 'location4':
+                        end[0] = 77.896182;
+                        end[1] = 29.863628;
+                        name_of_end = "ECE Dept.";
+                        break;
+                    case 'location5':
+                        end[0] = 77.897490;
+                        end[1] = 29.862376;
+                        name_of_end = "MIED";
+                        break;
+                    case 'location6':
+                        end[0] = 77.896122;
+                        end[1] = 29.862195;
+                        name_of_end = "Physics Dept.";
+                        break;
+                    case 'location7':
+                        end[0] = 77.894588;
+                        end[1] = 29.862265;
+                        name_of_end = "Govind Bhawan";
+                        break;
+                    case 'location8':
+                        end[0] = 77.895925;
+                        end[1] = 29.864544;
+                        name_of_end = "SBI";
+                        break;
+                    case 'location9':
+                        end[0] = 77.894138;
+                        end[1] = 29.864903; highli
+                        name_of_end = "LHC";
+                        break;
+                }
+
+                var path_color = '#0084ff';
+                var path_dash = [1, 0];
+
+                if (str == "walking") {
+                    path_dash = [0.3, 2];
+                } else if (str == 'wheelchair') {
+                    path_color = 'orange';
+                }
+
+
+
+
+                //Create a data source and add it to the map.
+                datasource = new atlas.source.DataSource();
+                map.sources.add(datasource);
+
+                //Add a layer for rendering the route line and have it render under the map labels.
+                map.layers.add(new atlas.layer.LineLayer(datasource, null, {
+                    strokeColor: path_color,
+                    strokeWidth: 5,
+                    strokeDashArray: path_dash,
+                    lineJoin: 'round',
+                    lineCap: 'round'
+                }), 'labels');
+
+                //Add a layer for rendering point data.
+                map.layers.add(new atlas.layer.SymbolLayer(datasource, null, {
+                    iconOptions: {
+                        image: ['get', 'iconImage'],
+                        allowOverlap: true,
+                        ignorePlacement: true
+                    },
+                    textOptions: {
+                        textField: ['get', 'title'],
+                        offset: [0, 1]
+                    },
+                    filter: ['any', ['==', ['geometry-type'], 'Point'], ['==', ['geometry-type'], 'MultiPoint']] //Only render Point or MultiPoints in this layer.
+                }));
+
+                /* Create the GeoJSON objects which represent the start and end point of the route */
+                var startPosition = [start[0], start[1]];
+                var startPoint = new atlas.data.Feature(new atlas.data.Point(startPosition), {
+                    title: name_of_start,
+                    iconImage: 'pin-blue'
+                });
+
+                var endPosition = [end[0], end[1]];
+                var endPoint = new atlas.data.Feature(new atlas.data.Point(endPosition), {
+                    title: name_of_end,
+                    iconImage: 'pin-red'
+                });
+
+                //Add the data to the data source.
+                datasource.add([startPoint, endPoint]);
+
+                //Fit the map window to the bounding box defined by the start and end positions.
+                map.setCamera({
+                    bounds: atlas.data.BoundingBox.fromPositions([startPosition, endPosition]),
+                    padding: 50
+                });
+
+                //Create the route request with the query being the start and end point in the format 'startLongitude,startLatitude:endLongitude,endLatitude'.
+                var requestUrl = restRoutingRequestUrl.replace('{query}', `${startPosition[1]},${startPosition[0]}:${endPosition[1]},${endPosition[0]}`);
+
+                //Process the request and render the route result on the map.
+                processRequest(requestUrl).then(response => {
+                    var route = response.routes[0];
+                    var routeCoordinates = [];
+                    for (var legIndex = 0; legIndex < route.legs.length; legIndex++) {
+                        var leg = route.legs[legIndex];
+
+                        //Convert the route point data into a format that the map control understands.
+                        var legCoordinates = leg.points.map(function (point) {
+                            return [point.longitude, point.latitude];
+                        });
+
+                        //Combine the route point data for each route leg together to form a single path.
+                        routeCoordinates = routeCoordinates.concat(legCoordinates);
+                    }
+
+                    //Create a line from the route path points and add it to the data source.
+                    var routeLine = new atlas.data.LineString(routeCoordinates);
+                    datasource.add(routeLine);
+                });
+
+                event.preventDefault();
+            }, false);
+
+        }
+
+    </script>
+    <style>
+        .sidePanel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            border-radius: 10px;
+            background-color: white;
+            padding: 10px;
+        }
+
+        #resultsPanel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border-radius: 10px;
+            background-color: white;
+            padding: 10px;
+        }
+
+        #resultsPanel table {
+            border-collapse: collapse;
+        }
+
+        #resultsPanel td,
+        #resultsPanel th {
+            border: 1px solid #ccc;
+            padding: 3px;
+        }
+
+        .colorBlock {
+            width: 30px;
+            height: 5px;
+            vertical-align: middle;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body onload="GetMap()">
+
+    <div id="myMap" style="position:relative;width:100%;min-width:290px;height:100vh;"></div>
+    <div id="main" style="position:absolute;top:0px;left:0px;height:100%;background-color:white;">
+
+        <!-- <div class="tab">
+            <button class="tablinks" onclick="openCity(event, 'London')">Info</button>
+            <button class="tablinks" onclick="openCity(event, 'Routes')">Navigation</button>
+        </div> -->
+
+        <!-- <div id="London" class="tabcontent">
+            <h3>Information</h3>
+            <div>
+                <h3 class="place-name">Main building</h3>
+                
+                <div class="place-info">Description about the place in given here.</div>
+            </div>
+        </div> -->
+
+        <div id="Routes" class="tabcontent">
+            <h3>Navigation</h3>
+            <form>
+                <div>Starting point:</div>
+                <select name="place" id="places" placeholder="Start" selected="none">
+                    <option name="start" value="location1">Main Gate</option>
+                    <option name="start" value="location2">Main Building</option>
+                    <option name="start" value="location3">Library</option>
+                    <option name="start" value="location4">ECE Department</option>
+                    <option name="start" value="location5">Mechanical Department</option>
+                    <option name="start" value="location6">Physics Department</option>
+                    <option name="start" value="location7">Govind Bhawan</option>
+                    <option name="start" value="location8">SBI Bank</option>
+                    <option name="start" value="location9">Lecture Hall Complex</option>
+                </select>
+                <br><br>
+                <div>Destination:</div>
+                <select name="place" id="places">
+                    <option name="end" value="location1">Main Gate</option>
+                    <option name="end" value="location2">Main Building</option>
+                    <option name="end" value="location3">Library</option>
+                    <option name="end" value="location4">ECE Department</option>
+                    <option name="end" value="location5">Mechanical Department</option>
+                    <option name="end" value="location6">Physics Department</option>
+                    <option name="end" value="location7">Govind Bhawan</option>
+                    <option name="end" value="location8">SBI Bank</option>
+                    <option name="end" value="location9">Lecture Hall Complex</option>
+                </select>
+                <br><br>
+                <div class="all_submits">
+                    <div class="submit-div"><img style="position:absolute;margin: 8px 10px;"
+                            src="./Map_icons/walking.svg"><input onclick="direction('walking')" 
+                            value="Walking" class="submit"></div>
+                    <div class="submit-div"><img style="position:absolute;margin: 8px 10px;"
+                            src="./Map_icons/wheelchair.svg"><input onclick="direction('wheelchair')" 
+                            value="Wheelchair" class="submit"></div>
+                    <div class="submit-div"><img style="position:absolute;margin: 8px 10px;"
+                            src="./Map_icons/cycle.svg"><input onclick="direction('cycle')"  value="Cycle"
+                            class="submit"></div>
+                </div>
+            </form>
+            <hr>
+            <br>
+            <div class="routes">
+                <div class="fastest">FASTEST ROUTE</div>
+                <div class="fastest-route">
+                    <img src="./Map_icons/person.svg">
+                    <div style="padding-left:20px">
+                        <div>
+                            <b>Distance: </b>
+                        </div>
+                        <div>
+                            <b>Time: </b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <script>
+        function openCity(evt, cityName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        function to_directions(val) {
+            document.getElementById("Routes").style.display = 'block';
+            document.getElementById("MB").style.display = 'none';
+            document.getElementById("MG").style.display = 'none';
+            document.getElementById("MGCL").style.display = 'none';
+            document.getElementById("LHC").style.display = 'none';
+            document.getElementById("physics").style.display = 'none';
+            document.getElementById("MIED").style.display = 'none';
+            document.getElementById("ECE").style.display = 'none';
+            document.getElementById("Govind").style.display = 'none';
+
+            var sel = document.getElementById('places');
+            var opts = sel.options;
+            for (var opt, j = 0; opt = opts[j]; j++) {
+                if (opt.value == val) {
+                    sel.selectedIndex = j;
+                    break;
+                }
+            }
+
+            // var newValue1 = e;
+
+            // var selectElement = document.getElementById('places');
+            // selectElement.options[selectElement.n].value = newValue1;
+            // selectElement.options[selectElement.n].textContent = newValue1;
+            // document.getElementById('places').value = 2;
+        }
+    </script>
+</body>
+
+</html>

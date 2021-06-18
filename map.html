@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+ <html>
+ <head>
+     <title></title>
+
+     <meta charset="utf-8">
+
+     <!-- Ensures that IE and Edge uses the latest version and doesn't emulate an older version -->
+     <meta http-equiv="x-ua-compatible" content="IE=Edge">
+
+     <!-- Ensures the web page looks good on all screen sizes. -->
+     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+     <!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+     <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" type="text/css">
+     <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+
+
+     <script type="text/javascript">
+         //Create an instance of the map control and set some options.
+         function InitMap()
+         {
+             var map = new atlas.Map('myMap', {
+                 center: [77.8955, 29.8665],
+                 zoom: 15.5,
+                 language: 'en-US',
+                 authOptions: {
+                     authType: 'subscriptionKey',
+                     subscriptionKey: 'Tww5Kx5V3WJdsmIuN0NtGN0BLKdw6Q84w44LwhCLFq0'
+                 }
+             });
+
+            //Wait until the map resources are ready.
+            map.events.add('ready', function() {
+
+                //Create a data source and add it to the map.
+                datasource = new atlas.source.DataSource();
+                map.sources.add(datasource);
+
+                //Add a layer for rendering the route lines and have it render under the map labels.
+                map.layers.add(new atlas.layer.LineLayer(datasource, null, {
+                    strokeColor: '#2272B9',
+                    strokeWidth: 5,
+                    lineJoin: 'round',
+                    lineCap: 'round'
+                }), 'labels');
+
+                //Add a layer for rendering point data.
+                map.layers.add(new atlas.layer.SymbolLayer(datasource, null, {
+                    iconOptions: {
+                        image: ['get', 'icon'],
+                        allowOverlap: true
+                },
+                    textOptions: {
+                        textField: ['get', 'title'],
+                        offset: [0, 1.2]
+                    },
+                    filter: ['any', ['==', ['geometry-type'], 'Point'], ['==', ['geometry-type'], 'MultiPoint']] //Only render Point or MultiPoints in this layer.
+                }));
+            });
+         }
+     </script>
+
+     <style>
+        html, body {
+            margin: 0;
+        }
+
+         #myMap {
+             height: 100vh;
+             width: 100vw;
+         }
+     </style>
+ </head>
+ <body onload="InitMap()">
+     <div id="myMap"></div>
+ </body>
+ </html>
